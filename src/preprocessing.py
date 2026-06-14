@@ -1,19 +1,29 @@
-from anndata import AnnData
 import scanpy as sc
+from utils.error import PreprocessingError
+from utils.logger import PipelineLogger
+from utils.decorator import handle_stage_errors
 
 class Preprocessor:
     def __init__(self, config=None):
         self.config = config or {}
         self.artifacts = {}
-        
+        self.logger = PipelineLogger(out_dir=self.config.get("out_dir", "output"), name="preprocessing")
+    
+    @handle_stage_errors("Preprocessing", wrap_error_class=PreprocessingError)
     def run(self, adata):
         adata.raw = adata.copy()  # Keep a copy of the raw data
         adata = self._qc_metrics(adata)
+        self.logger.log_artifacts("qc_metrics", self.artifacts["qc_before_filtering"])
         adata = self._filter_cells(adata)
+        self.logger.log_artifacts("filter_cells", self.artifacts["qc_after_filtering"])
         adata = self._filter_genes(adata)
+        self.logger.log_artifacts("filter_genes", self.artifacts["gene_filtering"])
         adata = self._log_transform(adata)
+        self.logger.log_artifacts("log_transform", self.artifacts["log_transform"])
         adata = self._hvg(adata)
+        self.logger.log_artifacts("hvg", self.artifacts["hvg"])
         adata = self._finalize(adata)
+        self.logger.log_artifacts("finalize", self.artifacts["finalize"])
         return adata
         
     def _qc_metrics(self, adata):
@@ -23,7 +33,7 @@ class Preprocessor:
         self.artifacts["qc_before_filtering"] = {
             "n_cells": adata.n_obs,
             "n_genes": adata.n_vars,
-            "percent_mt": adata.obs["pct_counts_mt"].mean()
+            "percent_mt": int(adata.obs["pct_counts_mt"].mean())
         }
         return adata
     
@@ -34,9 +44,9 @@ class Preprocessor:
         
         n_before = adata.n_obs
         
-        sc.pp.filter_cells(adata, min_genes=min_genes).copy()
-        sc.pp.filter_cells(adata, max_genes=max_genes).copy()
-        adata = adata[adata.obs["pct_counts_mt"] < max_pct_mt].copy()
+        sc.pp.filter_cells(adata, min_genes=min_genes)
+        sc.pp.filter_cells(adata, max_genes=max_genes)
+        adata = adata[adata.obs["pct_counts_mt"] < max_pct_mt]
         
         self.artifacts["qc_after_filtering"] = {
             "n_before": n_before,
@@ -72,15 +82,20 @@ class Preprocessor:
         
         self.artifacts["hvg"] = {
             "n_top_genes": n_top_genes,
-            "n_hvg": n_hvg
+            "n_hvg": int(n_hvg)
         }
         
-        adata = adata[:, adata.var["highly_variable"]].copy()
+        adata = adata[:, adata.var["highly_variable"]]
         return adata
     
     def _finalize(self, adata):
         adata.uns["preprocessing"] = {
             "config": self.config,
+            "n_cells_final": adata.n_obs,
+            "n_genes_final": adata.n_vars
+        }
+        
+        self.artifacts["finalize"] = {
             "n_cells_final": adata.n_obs,
             "n_genes_final": adata.n_vars
         }

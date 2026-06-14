@@ -25,3 +25,7 @@ Output:
 - Figures
 - Metrics
 - Report
+
+# run
+
+uv run python src/run_pipeline.py --config config/config.yml --output output/final.h5ad

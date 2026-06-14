@@ -1,0 +1,26 @@
+run_name: "pbmc_pipeline"
+output_dir: "output"
+dataloader:
+  dataset_name: "pbmc3k"
+  format: "h5ad"
+  cache_dir: "src/data/cache"
+preprocessor:
+  min_genes: 200
+  max_genes: 6000
+  max_pct_mt: 20
+  min_cells: 3
+  n_top_genes: 2000
+  target_sum: 10000
+model: "pca"
+model_config:
+  embedding_key: "X_pca"
+  params:
+    n_components: 50
+clustering:
+  method: "leiden"
+  resolution: 1.0
+  n_neighbors: 15
+  n_pcs: 50
+  embedding_key: "X_pca"
+  umap_min_dist: 0.5
+  leiden_resolution: 1.0

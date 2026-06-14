@@ -1,8 +1,10 @@
-# empty
 import importlib
 
-class SCVIWrapper:
+from .base import BaseEmbeddingModel
+
+class SCVIWrapper(BaseEmbeddingModel):
 	def __init__(self, params=None):
+		super().__init__(params)
 		self.params = params or {}
 
 	def fit_transform(self, adata, out_dir=None):
