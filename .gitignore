@@ -1,7 +1,8 @@
 # =========================
 # uv / Python environments
 # =========================
-.venv/
+.nextflow/
+.nextflow_linux/
 venv/
 env/
 ENV/
@@ -72,3 +73,10 @@ data/processed/
 config.local.*
 configs/local.*
 secrets.*
+
+# =========================
+# nextflow logs
+# =========================
+
+.nextflow.log.*
+work/

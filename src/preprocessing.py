@@ -77,7 +77,7 @@ class Preprocessor:
     
     def _hvg(self, adata):
         n_top_genes = self.config.get("n_top_genes", 2000)
-        sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes, flavor="seurat_v3", subset=False)
+        sc.pp.highly_variable_genes(adata, n_top_genes=n_top_genes, flavor="seurat", subset=False)
         n_hvg = adata.var["highly_variable"].sum()
         
         self.artifacts["hvg"] = {

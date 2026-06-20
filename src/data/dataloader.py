@@ -13,21 +13,17 @@ class DataLoader:
     @handle_stage_errors("Data Loading", wrap_error_class=DataLoadingError)
     def load_data(self, file_path=None) -> ad.AnnData:
         dataset_name = self.config.get("dataset_name")
+        source = file_path or dataset_name
 
-        if file_path:
-            adata = self._load_from_path(file_path)
+        if not source:
+            raise DataLoadingError("No input file path or dataset name provided in config or arguments")
 
-        elif dataset_name:
-            if self._is_path(dataset_name):
-                adata = self._load_from_path(dataset_name)
-            else:
-                adata = self._load_scanpy_dataset(dataset_name)
-
+        if self._is_path(source):
+            adata = self._load_from_path(source)
         else:
-            raise DataLoadingError("No input file path or dataset name provided in config")
+            adata = self._load_scanpy_dataset(source)
 
         self._validate_adata(adata)
-
         return adata
 
     def _load_from_path(self, file_path) -> ad.AnnData:

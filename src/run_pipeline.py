@@ -18,6 +18,8 @@ def parse_args():
     parser.add_argument("--config", required=True, help="Path to YAML config file")
     parser.add_argument("--input", default=None, help="Path to input data file (.h5ad or URL)")
     parser.add_argument("--output", required=True, help="Path to write the processed .h5ad file")
+    parser.add_argument("--model", default="pca", help="Model to use for dimensionality reduction (e.g., pca, scvi)")
+    parser.add_argument("--n-components", type=int, default=50, help="Number of dimensions for dimensionality reduction")
     return parser.parse_args()
 
 
@@ -36,6 +38,10 @@ def main():
         sys.exit(1)
     try:
         # Pass input/output parameters dynamically to override or supplement config
+        config["input"] = args.input
+        config["output_dir"] = args.output
+        config["model"] = args.model
+        config["model_config"]["params"]["n_components"] = args.n_components
         pipeline = Pipeline.from_config(config)
         
         # The pipeline class executes the steps and returns the final AnnData

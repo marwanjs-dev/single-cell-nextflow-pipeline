@@ -29,3 +29,9 @@ Output:
 # run
 
 uv run python src/run_pipeline.py --config config/config.yml --output output/final.h5ad
+
+nextflow run nextflow/main.nf \
+  --input data/input.h5ad \
+  --outdir results/nextflow_pca \
+  --model pca \
+  --n_components 50
